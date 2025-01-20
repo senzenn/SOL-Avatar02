@@ -1,73 +1,86 @@
 'use client';
 
+import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { Suspense, useEffect, useRef, useState, useCallback } from 'react';
-import { Environment, PerspectiveCamera } from '@react-three/drei';
+import { Suspense, useRef, useState, useCallback } from 'react';
+import { Environment, ScrollControls, useScroll } from '@react-three/drei';
 import { JumpSuit } from './3D/JumpSuit';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useThree } from '@react-three/fiber';
-import { Group, DirectionalLight, Color, PointLight } from 'three';
+import { useThree, useFrame } from '@react-three/fiber';
+import { Group, Vector3 } from 'three';
 import { ErrorBoundary } from 'react-error-boundary';
 import { TypeAnimation } from 'react-type-animation';
 import VerticalMarquee from './VerticalMarquee';
 
-// Register ScrollTrigger plugin
-gsap.registerPlugin(ScrollTrigger);
-
 function Scene({ mousePosition }: { mousePosition: { x: number; y: number } }) {
   const groupRef = useRef<Group>(null);
+  const scroll = useScroll();
+  const { camera } = useThree();
+  const targetPosition = useRef(new Vector3(0, 2, 4));
 
-  useEffect(() => {
+  useFrame((state, delta) => {
     if (!groupRef.current) return;
 
-    // Initial animation
-    gsap.from(groupRef.current.rotation, {
-      y: 0,
-      duration: 2,
-      ease: 'power3.out'
-    });
-  }, []);
+    // Calculate scroll progress (0 to 1)
+    const scrollProgress = scroll.offset;
+    
+    // Camera movement path - Start from head (y: 2) and move down to feet (y: -2)
+    targetPosition.current.y = 2 - scrollProgress * 4;
+    // Zoom out slightly as we move down
+    targetPosition.current.z = 4 + scrollProgress * 1;
+    // Subtle sideways movement
+    targetPosition.current.x = Math.sin(scrollProgress * Math.PI) * 0.5;
 
-  useEffect(() => {
-    if (!groupRef.current) return;
+    // Smooth camera movement with delta time
+    camera.position.lerp(targetPosition.current, 0.1 * delta * 60);
 
-    // Mouse follow effect
-    gsap.to(groupRef.current.rotation, {
-      x: mousePosition.y * 0.05,
-      y: mousePosition.x * 0.05,
-      duration: 1,
-      ease: 'power2.out'
-    });
-  }, [mousePosition]);
+    // Model rotation based on scroll and mouse
+    const baseRotation = scrollProgress * Math.PI * 2; // Full rotation during scroll
+    const mouseInfluence = 0.1;
+
+    // Smooth model rotation with delta time
+    groupRef.current.rotation.y = THREE.MathUtils.lerp(
+      groupRef.current.rotation.y,
+      baseRotation + (mousePosition.x * mouseInfluence),
+      0.1 * delta * 60
+    );
+    groupRef.current.rotation.x = THREE.MathUtils.lerp(
+      groupRef.current.rotation.x,
+      mousePosition.y * mouseInfluence,
+      0.1 * delta * 60
+    );
+  });
 
   return (
-    <group ref={groupRef}>
-      {/* Main teal/green light from front-right */}
+    <group ref={groupRef} dispose={null}>
+      {/* Main light */}
       <directionalLight
         position={[5, 3, 2]}
-        intensity={4}
+        intensity={2}
         color="#00ff9d"
+        castShadow
       />
-      {/* Blue rim light from back-left */}
+      {/* Rim light */}
       <directionalLight
         position={[-5, -2, -2]}
-        intensity={3}
+        intensity={1.5}
         color="#0066ff"
       />
-      {/* Yellow accent light */}
+      {/* Top light */}
       <directionalLight
         position={[0, 5, 5]}
-        intensity={2}
+        intensity={1}
         color="#ffd700"
       />
-      {/* Ambient light for base illumination */}
-      <ambientLight intensity={0.2} />
-      <JumpSuit 
-        scale={6} 
-        position={[0, -8, -2]} 
-        rotation={[0, 0, 0]} 
+      {/* Moving fill light */}
+      <directionalLight
+        position={[targetPosition.current.x, targetPosition.current.y + 5, targetPosition.current.z + 5]}
+        intensity={1}
+        color="#ffffff"
       />
+      <ambientLight intensity={0.2} />
+      <group scale={8} position={[0, -2, 0]}>
+        <JumpSuit />
+      </group>
       <Environment preset="warehouse" />
     </group>
   );
@@ -111,35 +124,32 @@ export default function Hero() {
 
   return (
     <div 
-      id="hero-section"
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className="relative h-screen w-full overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, #000000 0%, #0a1f1c 100%)',
-      }}
+      className="relative h-[300vh] w-full overflow-hidden bg-gradient-to-br from-black to-[#0a1f1c]"
     >
-      {/* Vertical Marquee */}
-      <VerticalMarquee />
+      <div className="fixed inset-0">
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Canvas
+            camera={{ position: [0, 2, 4], fov: 25 }}
+            gl={{
+              antialias: true,
+              alpha: true,
+              powerPreference: 'high-performance',
+            }}
+          >
+            <Suspense fallback={<LoadingFallback />}>
+              <ScrollControls pages={3} damping={0.2}>
+                <Scene mousePosition={mousePosition} />
+              </ScrollControls>
+            </Suspense>
+          </Canvas>
+        </ErrorBoundary>
+      </div>
 
-      {/* 3D Scene */}
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <Canvas
-          className="absolute inset-0"
-          camera={{ position: [0, 0, 4], fov: 25 }}
-          gl={{
-            antialias: true,
-            alpha: true,
-            powerPreference: 'high-performance',
-            stencil: false,
-            depth: true
-          }}
-        >
-          <Suspense fallback={<LoadingFallback />}>
-            <Scene mousePosition={mousePosition} />
-          </Suspense>
-        </Canvas>
-      </ErrorBoundary>
+      <div className="relative z-10">
+        <VerticalMarquee />
+      </div>
 
       {/* Text Overlay */}
       <div className="absolute inset-0 flex flex-col items-end justify-center pr-8 md:pr-16 z-10 pointer-events-none">
