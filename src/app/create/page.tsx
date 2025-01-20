@@ -7,9 +7,11 @@ import { Scene3D } from '@/components/Scene3D';
 import { ChatProvider } from '@/hooks/useChat';
 import { UI } from '@/components/UI';
 import { useAvatar, AvatarProvider } from '@/hooks/useAvatar';
+import { Button } from '@/components/ui/button';
 
 export default function CreateAvatar() {
   const router = useRouter();
+  //@ts-ignore
   const { refreshAvatar } = useAvatar();
   const [avatarUrl, setAvatarUrl] = useState<string>('');
   const [showAvatarCreator, setShowAvatarCreator] = useState(true);
@@ -36,7 +38,6 @@ export default function CreateAvatar() {
       setIsLoading(true);
       console.log('🎯 Starting avatar creation process...');
       console.log('📝 Avatar URL:', url);
-      console.log('⚙️ Config:', config);
       
       try {
         setLoadingStatus('Downloading avatar model...');
@@ -64,46 +65,24 @@ export default function CreateAvatar() {
         });
 
         if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text();
-          console.error('❌ Upload failed:', errorText);
-          throw new Error(`Failed to save avatar: ${errorText}`);
+          throw new Error(`Failed to save avatar: ${await uploadResponse.text()}`);
         }
 
         const data = await uploadResponse.json();
         console.log('✅ Avatar saved successfully:', data);
-        setAvatarUrl(data.avatar.modelPath);
         
-        setLoadingStatus('Preparing avatar preview...');
-        // Add a delay to ensure the file is written and accessible
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log('⏳ File write delay completed');
+        // Set the avatar URL first
+        setAvatarUrl(url);
         
-        setLoadingStatus('Refreshing avatar data...');
-        // Refresh avatar data in context and wait for it to complete
-        await refreshAvatar();
-        console.log('🔄 Avatar data refreshed');
-        
-        // Add another small delay to ensure the avatar data is loaded in the context
+        // Update loading status and states
+        setLoadingStatus('Preparing preview...');
         await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Verify that avatar data is loaded
-        const verifyResponse = await fetch('/api/avatar');
-        const avatars = await verifyResponse.json();
-        console.log('📚 All avatars:', avatars);
-        const latestAvatar = avatars[avatars.length - 1];
         
-        if (!latestAvatar || !latestAvatar.modelPath) {
-          console.error('❌ No avatar data found after creation');
-          throw new Error('Avatar data not found after creation');
-        }
-        console.log('✅ Avatar data verified:', latestAvatar);
-
-        // Set loading states
-        setLoadingStatus('');
-        setIsLoading(false);
+        // Switch to preview mode
         setShowAvatarCreator(false);
-
-        // Show success message
+        setIsLoading(false);
+        setLoadingStatus('');
+        
         console.log('🎉 Avatar creation completed successfully!');
       } catch (error) {
         console.error('❌ Error processing avatar:', error);
@@ -119,7 +98,7 @@ export default function CreateAvatar() {
   if (isLoading) {
     return (
       <div className="h-screen w-full bg-black flex flex-col items-center justify-center gap-4">
-        <div className="text-white text-2xl">
+        <div className="text-white text-2xl animate-pulse">
           {loadingStatus || 'Loading...'}
         </div>
         <div className="w-32 h-1 bg-gray-800 rounded-full overflow-hidden">
@@ -134,28 +113,39 @@ export default function CreateAvatar() {
     return (
       <div className="h-screen w-full bg-black relative">
         <div className="absolute top-4 right-4 z-10 flex gap-4">
-          <button
-            onClick={() => setShowAvatarCreator(true)}
-            className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+          <Button
+            onClick={() => {
+              const a = document.createElement('a');
+              a.href = avatarUrl;
+              a.download = 'avatar.glb';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
           >
-            Edit Avatar
-          </button>
-          <button
+            Download GLB
+          </Button>
+          <Button
             onClick={() => router.push('/embed')}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="bg-green-500 hover:bg-green-600 text-white"
           >
-            Go to Embed
-          </button>
-        </div>
-        <div className="absolute top-4 left-4 z-10">
-          <div className="text-white text-sm">
-            Model Path: {avatarUrl}
-          </div>
+            Embed
+          </Button>
+          <Button
+            onClick={() => {
+              setShowAvatarCreator(true);
+              setAvatarUrl('');
+            }}
+            className="bg-gray-500 hover:bg-gray-600 text-white"
+          >
+            Create New
+          </Button>
         </div>
         <ChatProvider>
           <AvatarProvider>
             <UI />
-            <Scene3D key={avatarUrl} />
+            <Scene3D key={avatarUrl} initialModelPath={avatarUrl} isCreateRoute={true} />
           </AvatarProvider>
         </ChatProvider>
       </div>
