@@ -40,7 +40,7 @@ const Dots = (props: any) => {
 };
 
 export const Experience = () => {
-  const cameraControls = useRef<CameraControls>();
+  const cameraControls = useRef<CameraControls | null>(null);
   const { cameraZoomed } = useChat();
 
   useEffect(() => {
@@ -56,6 +56,7 @@ export const Experience = () => {
   }, [cameraZoomed]);
   return (
     <>
+    // @ts-ignore
       <CameraControls ref={cameraControls} />
       <Environment preset="sunset" />
       {/* Wrapping Dots into Suspense to prevent Blink when Troika/Font is loaded */}

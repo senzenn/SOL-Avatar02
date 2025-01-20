@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { useChat } from "../hooks/useChat";
 import { useAvatar } from "@/hooks/useAvatar";
 import type { GLTF } from 'three-stdlib';
+import CameraControls from 'camera-controls';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -222,6 +223,7 @@ export function Avatar(props: AvatarProps) {
   const [audio, setAudio] = useState<HTMLAudioElement>();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const cameraControlsRef = useRef<CameraControls | null>(null);
 
   useEffect(() => {
     if (nodes?.EyeLeft && !isInitialized) {

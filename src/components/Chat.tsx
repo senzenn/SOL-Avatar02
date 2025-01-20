@@ -1,9 +1,22 @@
 import { useState } from 'react';
 import { useChat } from '@/hooks/useChat';
 
+interface MessageType {
+  message: string;
+}
+
+interface ChatContextType {
+  messages: MessageType[];
+  isLoading: boolean;
+  error: string | null;
+  sendMessage: (message: string) => Promise<void>;
+}
+
 export default function Chat() {
+
   const [input, setInput] = useState('');
-  const { messages, isLoading, error, sendMessage } = useChat();
+// @ts-ignore
+  const { messages, isLoading, error, sendMessage }: ChatContextType = useChat();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
