@@ -11,6 +11,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { TypeAnimation } from 'react-type-animation';
 import VerticalMarquee from './VerticalMarquee';
 import LoaderPage from './LoaderPage';
+import { motion, useTransform, useScroll as useScrollMotion, AnimatePresence } from 'framer-motion';
 
 function Scene({ mousePosition }: { mousePosition: { x: number; y: number } }) {
   const groupRef = useRef<Group>(null);
@@ -240,130 +241,35 @@ function ErrorFallback({ error }: { error: Error }) {
   );
 }
 
-function TextOverlay() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
- 
-
-  return (
-    // <div className="fixed top-1/2 right-8 md:right-16 -translate-y-1/2 z-30">
-    //   <div className="max-w-xl backdrop-blur-sm bg-black/30 p-8 rounded-lg">
-    //     <TypeAnimation
-    //       sequence={[
-    //         'Ciao, everyone!',
-    //         1000,
-    //         "I'm Dima, a Web developer.",
-    //         1000,
-    //         'Originally from Ukraine🇺🇦,',
-    //         1000,
-    //         'now live in Modena',
-    //         1000,
-    //       ]}
-    //       wrapper="h1"
-    //       speed={50}
-    //       className="text-3xl md:text-4xl font-syne text-white mb-6"
-    //       repeat={0}
-    //       cursor={true}
-    //     />
-    //     <div className="space-y-4">
-    //       <p className="text-base md:text-lg text-[#888] font-grotesk leading-relaxed">
-    //         crafting beautiful stuff with the{' '}
-    //         <span className="text-yellow-400">amaaaazing</span> people at{' '}
-    //         <a href="#" className="text-yellow-400 hover:text-yellow-300 transition-colors pointer-events-auto">
-    //           Team99
-    //         </a>{' '}
-    //         - Modena Branding Agency.
-    //       </p>
-    //       <p className="text-base md:text-lg text-[#888] font-grotesk">
-    //         For any info, just{' '}
-    //         <a href="#contact" className="text-yellow-400 hover:text-yellow-300 transition-colors pointer-events-auto">
-    //           contact me
-    //         </a>
-    //         !
-    //       </p>
-    //     </div>
-    //   </div>
-    // </div>
-    <>
-   {/* TODO: add text overlay */} 
-    
-    </>
-  );
-}
-
 export default function Hero() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width * 2 - 1;
-    const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    // Convert mouse position to normalized coordinates (-1 to 1)
+    const x = (e.clientX / window.innerWidth) * 2 - 1;
+    const y = -(e.clientY / window.innerHeight) * 2 + 1;
     setMousePosition({ x, y });
   }, []);
 
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [handleMouseMove]);
+
   return (
-    <div 
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      className="relative h-[300vh] w-full overflow-hidden bg-gradient-to-br from-black to-[#0a1f1c]"
-    >
-      {/* 3D Canvas Container */}
-      <div className="fixed inset-0 z-10">
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
+    <div className="h-screen w-full relative bg-[#0A0A1E]">
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <Suspense fallback={<LoadingFallback />}>
           <Canvas
-            camera={{ position: [0, 6, 8], fov: 25 }}
-            gl={{
-              antialias: true,
-              alpha: true,
-              powerPreference: 'high-performance',
-              toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 1.1,
-            }}
-            dpr={[1, 2]}
+            camera={{ position: [0, 6, 8], fov: 45 }}
+            className="h-full w-full"
           >
-            <Suspense fallback={null}>
-              <ScrollControls pages={3} damping={0.2}>
-                <Scene mousePosition={mousePosition} />
-              </ScrollControls>
-            </Suspense>
+            <ScrollControls pages={4} damping={0.3}>
+              <Scene mousePosition={mousePosition} />
+            </ScrollControls>
           </Canvas>
-        </ErrorBoundary>
-      </div>
-
-      {/* Loading Page */}
-      <LoaderPage />
-
-      {/* Vertical Marquee */}
-      <div className="fixed left-8 top-1/2 -translate-y-1/2 z-20">
-        <VerticalMarquee />
-      </div>
-
-      {/* Text Content */}
-      <TextOverlay />
-
-      {/* Social Links */}
-      {/* <div className="fixed bottom-8 right-8 flex space-x-4 z-40">
-        <a 
-          href="#" 
-          className="w-10 h-10 border border-yellow-400 flex items-center justify-center rounded-none hover:bg-yellow-400/20 transition-colors"
-          aria-label="Email"
-        >
-          <span className="text-yellow-400 font-syne text-sm">@</span>
-        </a>
-        <a 
-          href="#" 
-          className="w-10 h-10 border border-yellow-400 flex items-center justify-center rounded-none hover:bg-yellow-400/20 transition-colors"
-          aria-label="Like"
-        >
-          <span className="text-yellow-400 font-syne text-sm">♥</span>
-        </a>
-      </div> */}
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

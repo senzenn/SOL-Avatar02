@@ -70,13 +70,17 @@ module.exports = {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        "float": {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
         },
-        "bounce-slow": {
-          "0%, 100%": { transform: "translateY(-5%)" },
-          "50%": { transform: "translateY(0)" },
+        'spin-slow': {
+          'from': { transform: 'rotate(0deg)' },
+          'to': { transform: 'rotate(360deg)' },
+        },
+        'bounce-slow': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
         },
         "shake": {
           "0%, 100%": { transform: "translateX(0)" },
@@ -97,9 +101,8 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.6s ease-out",
         "float": "float 3s ease-in-out infinite",
+        "spin-slow": "spin-slow 8s linear infinite",
         "bounce-slow": "bounce-slow 2s ease-in-out infinite",
-        "spin-slow": "spin 3s linear infinite",
-        "spin-slower": "spin 4s linear infinite",
         "shake": "shake 0.5s cubic-bezier(.36,.07,.19,.97) both",
         "slide-in": "slide-in 0.5s ease-out",
         "slide-out": "slide-out 0.5s ease-out",

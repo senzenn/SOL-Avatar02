@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for grid lines -->
+    <linearGradient id="gridGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ade80;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#818cf8;stop-opacity:0.1" />
+    </linearGradient>
+    
+    <!-- Glow effect for nodes -->
+    <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.29   0 0 0 0 0.86   0 0 0 0 0.5  0 0 0 0.5 0"/>
+    </filter>
+
+    <!-- Pattern definition -->
+    <pattern id="gridPattern" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+      <!-- Grid lines -->
+      <path d="M50 0V50M0 50H50" stroke="url(#gridGradient)" stroke-width="0.5" />
+      
+      <!-- Node at intersection -->
+      <circle cx="50" cy="50" r="1" fill="white" filter="url(#nodeGlow)" />
+    </pattern>
+  </defs>
+
+  <!-- Background with pattern -->
+  <rect width="400" height="400" fill="url(#gridPattern)" />
+
+  <!-- Overlay gradient -->
+  <rect width="400" height="400" fill="url(#gridGradient)" style="mix-blend-mode: overlay" />
+
+  <!-- Random glowing nodes -->
+  <g filter="url(#nodeGlow)">
+    <circle cx="100" cy="100" r="2" fill="white" opacity="0.6" />
+    <circle cx="300" cy="200" r="2" fill="white" opacity="0.4" />
+    <circle cx="150" cy="350" r="2" fill="white" opacity="0.5" />
+    <circle cx="250" cy="50" r="2" fill="white" opacity="0.7" />
+  </g>
+</svg> 

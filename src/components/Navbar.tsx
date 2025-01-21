@@ -20,6 +20,7 @@ const navItems: NavItem[] = [
   { label: 'DOUBLE HULL', href: '/double-hull', number: '05' },
   { label: 'OPERATION MODE', href: '/operation', number: '06' },
   { label: 'THE BIG POWERBANK', href: '/powerbank', number: '07' },
+  { label: 'ROADMAP', href: '/roadmap', number: '08' },
 ];
 
 export default function Navbar() {

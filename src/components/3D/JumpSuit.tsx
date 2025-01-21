@@ -7,8 +7,9 @@ Title: JUMPSUIT Low Poly
 */
 
 import * as THREE from 'three'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react'
 import { useGLTF } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import { GLTF } from 'three-stdlib'
 
 type GLTFResult = GLTF & {
@@ -28,38 +29,158 @@ type GLTFResult = GLTF & {
   }
 }
 
+// Enhanced predefined colors for cycling with more vibrant options
+const helmetColors = [
+  '#FFD700', // Gold
+  '#FF6B6B', // Coral Red
+  '#4ECDC4', // Turquoise
+  '#9B59B6', // Amethyst
+  '#2ECC71', // Emerald
+  '#E74C3C', // Pomegranate
+  '#3498DB', // Peter River
+];
+
+// Neck colors that complement the helmet colors
+const neckColors = [
+  '#B8860B', // Dark Gold
+  '#CD5C5C', // Dark Coral
+  '#2E8B57', // Dark Turquoise
+  '#6A1B9A', // Dark Amethyst
+  '#1B5E20', // Dark Emerald
+  '#922B21', // Dark Pomegranate
+  '#1A5276', // Dark River
+];
+
 export function JumpSuit(props: JSX.IntrinsicElements['group']) {
   const { nodes } = useGLTF('/models/jumpsuit_low_poly.glb') as GLTFResult;
+  const [colorIndex, setColorIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [glowIntensity, setGlowIntensity] = useState(0);
+  const groupRef = useRef<THREE.Group>(null);
+  const pulseRef = useRef(0);
+  const rotateRef = useRef(0);
 
-  // Create custom materials with the desired colors using useMemo
+  // Handle color change on click/tap with micro-animation
+  const handleClick = useCallback(() => {
+    setColorIndex((prev) => (prev + 1) % helmetColors.length);
+    if (groupRef.current) {
+      groupRef.current.scale.set(1.1, 1.1, 1.1);
+      setTimeout(() => {
+        if (groupRef.current) {
+          groupRef.current.scale.set(1, 1, 1);
+        }
+      }, 150);
+    }
+  }, []);
+
+  // Handle scroll events with smoother transitions
+  useEffect(() => {
+    let lastScrollTime = 0;
+    const scrollThreshold = 30; // Reduced threshold for more frequent changes
+    const scrollDelay = 300; // Minimum time between color changes
+
+    const handleScroll = () => {
+      const now = Date.now();
+      if (now - lastScrollTime > scrollDelay) {
+        setColorIndex((prev) => (prev + 1) % helmetColors.length);
+        lastScrollTime = now;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Create custom materials with enhanced effects
   const materials = useMemo(() => ({
-    head: new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#0a1f1c'),
+    head: new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(helmetColors[colorIndex]),
       roughness: 0.1,
       metalness: 0.9,
-      envMapIntensity: 1.5,
+      envMapIntensity: 2.0,
+      emissive: new THREE.Color(helmetColors[colorIndex]),
+      emissiveIntensity: 0,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      reflectivity: 1.0,
+      transparent: true,
+      opacity: 1,
     }),
-    suit: new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#0a1f1c'),
+    suit: new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(neckColors[colorIndex]),
       roughness: 0.2,
       metalness: 0.8,
-      envMapIntensity: 1.2,
+      envMapIntensity: 1.5,
+      emissive: new THREE.Color(neckColors[colorIndex]),
+      emissiveIntensity: 0,
+      clearcoat: 0.5,
+      clearcoatRoughness: 0.2,
+      reflectivity: 0.8,
+      transparent: true,
+      opacity: 1,
     }),
-    details: new THREE.MeshStandardMaterial({
+    details: new THREE.MeshPhysicalMaterial({
       color: new THREE.Color('#ffd700'),
       roughness: 0.3,
-      metalness: 0.7,
-      envMapIntensity: 1,
+      metalness: 1.0,
+      envMapIntensity: 2.0,
+      clearcoat: 0.5,
+      clearcoatRoughness: 0.1,
+      reflectivity: 1.0,
     }),
-  }), []);
+  }), [colorIndex]);
+
+  // Enhanced animation effects
+  useFrame((state, delta) => {
+    if (!groupRef.current) return;
+
+    // Subtle rotation
+    rotateRef.current += delta * 0.3;
+    groupRef.current.rotation.y = Math.sin(rotateRef.current) * 0.1;
+
+    // Pulsing glow and scale effect
+    pulseRef.current += delta;
+    const pulseValue = Math.sin(pulseRef.current * 2) * 0.5 + 0.5;
+    
+    // Enhanced hover effects
+    if (isHovered) {
+      setGlowIntensity((prev) => Math.min(prev + delta * 4, 1.5));
+      groupRef.current.scale.setScalar(0.9 + pulseValue * 0.05);
+    } else {
+      setGlowIntensity((prev) => Math.max(prev - delta * 4, 0));
+      groupRef.current.scale.setScalar(0.9 + pulseValue * 0.02);
+    }
+
+    // Apply enhanced glow effects
+    const baseGlow = isHovered ? glowIntensity : 0.2;
+    materials.head.emissiveIntensity = baseGlow + pulseValue * 0.4;
+    materials.suit.emissiveIntensity = (baseGlow + pulseValue * 0.4) * 0.6;
+    
+    // Dynamic environment map intensity
+    materials.head.envMapIntensity = 2.0 + pulseValue * 0.8;
+    materials.suit.envMapIntensity = 1.5 + pulseValue * 0.6;
+    materials.details.envMapIntensity = 2.0 + pulseValue * 0.8;
+
+    // Color pulse effect
+    const colorPulse = pulseValue * 0.2;
+    materials.head.color.offsetHSL(0, 0, colorPulse);
+    materials.suit.color.offsetHSL(0, 0, colorPulse);
+  });
 
   const model = useMemo(() => (
-    <group {...props} dispose={null}>
+    <group 
+      ref={groupRef}
+      {...props} 
+      dispose={null}
+      onClick={handleClick}
+      onPointerEnter={() => setIsHovered(true)}
+      onPointerLeave={() => setIsHovered(false)}
+    >
       <group name="Sketchfab_Scene">
         <group
           name="Sketchfab_model"
           rotation={[-Math.PI / 2, 0, 0]}
-          scale={0.395}
+          scale={0.295}
         >
           <group
             name="Stay_Posefbx"
@@ -125,7 +246,7 @@ export function JumpSuit(props: JSX.IntrinsicElements['group']) {
         </group>
       </group>
     </group>
-  ), [nodes, materials, props]);
+  ), [nodes, materials, props, handleClick]);
 
   return model;
 }

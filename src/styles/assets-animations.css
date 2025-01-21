@@ -1,0 +1,121 @@
+/* Logo Animations */
+.solavatar-logo {
+  transition: transform 0.3s ease;
+}
+
+.solavatar-logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 20px rgba(74,222,128,0.3));
+}
+
+/* Grid Background Animation */
+.tech-grid {
+  animation: gridPulse 4s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Social Icons Hover Effects */
+.social-icon {
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 0 10px rgba(129,140,248,0.5));
+}
+
+/* Decorative Elements Animation */
+.circuit-line {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: drawLine 2s ease forwards;
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Node Glow Animation */
+.glow-node {
+  animation: nodePulse 2s ease-in-out infinite;
+}
+
+@keyframes nodePulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px rgba(74,222,128,0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(74,222,128,0.5));
+  }
+}
+
+/* Text Gradient Animation */
+.gradient-text {
+  background: linear-gradient(
+    45deg,
+    #4ade80,
+    #818cf8,
+    #f472b6,
+    #4ade80
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradientFlow 8s ease infinite;
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Hover Effects for Interactive Elements */
+.interactive-element {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.interactive-element::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, #4ade8033, #818cf833);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.interactive-element:hover::after {
+  opacity: 1;
+}
+
+/* Loading Animation */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} 
