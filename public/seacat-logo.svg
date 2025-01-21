@@ -1,0 +1,9 @@
+<svg width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0 19.2H3.6V4.8H0V19.2Z" fill="#FF4D00"/>
+  <path d="M14.4 19.2H18V4.8H14.4V19.2Z" fill="#FF4D00"/>
+  <path d="M28.8 19.2H32.4V4.8H28.8V19.2Z" fill="#FF4D00"/>
+  <path d="M43.2 19.2H46.8V4.8H43.2V19.2Z" fill="#FF4D00"/>
+  <path d="M57.6 19.2H61.2V4.8H57.6V19.2Z" fill="#FF4D00"/>
+  <path d="M72 19.2H75.6V4.8H72V19.2Z" fill="#FF4D00"/>
+  <text x="85" y="19" fill="#666666" font-family="Arial" font-size="16">T</text>
+</svg> 

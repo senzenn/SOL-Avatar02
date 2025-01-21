@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AvatarProvider } from '@/hooks/useAvatar';
-
+import Navbar from "@/components/Navbar";
+import ShaderBackground from '@/components/ShaderBackground';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,7 +12,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Sol Avatar",
-  description: "Solana Avatar",
+  description: "Next generation avatar platform",
 };
 
 export default function RootLayout({
@@ -22,7 +23,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
+        <ShaderBackground />
         <AvatarProvider>
+          <Navbar />
           {children}
         </AvatarProvider>
       </body>

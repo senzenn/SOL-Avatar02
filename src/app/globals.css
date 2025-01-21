@@ -115,3 +115,52 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* Glowing Text Effect */
+.glow-text {
+  text-shadow: 0 0 10px rgba(0, 102, 255, 0.5),
+               0 0 20px rgba(0, 102, 255, 0.3),
+               0 0 30px rgba(0, 102, 255, 0.1);
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 102, 255, 0.5);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 102, 255, 0.7);
+}
+
+/* Background Animation */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient {
+  background: linear-gradient(45deg, rgba(0,102,255,0.1), rgba(128,0,255,0.1));
+  background-size: 200% 200%;
+  animation: gradientAnimation 15s ease infinite;
+}
