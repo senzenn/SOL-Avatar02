@@ -46,63 +46,59 @@ export const UI = memo(({ hidden }: UIProps) => {
   }
 
   return (
-    <div className="fixed top-0 left-0 right-0 bottom-0 z-10 flex flex-col pointer-events-none">
-      {/* Header */}
-      {/* <header className="bg-black/50 backdrop-blur-sm p-4 flex items-center justify-between pointer-events-auto">
-        <h1 className="text-pink-500 font-bold text-xl">VIRTUAL GF</h1>
-        <nav className="flex gap-6 text-gray-300" aria-label="Main navigation">
-          <NavLink href="#about">ABOUT</NavLink>
-          <NavLink href="#features">FEATURES</NavLink>
-          <NavLink href="create"> CREATE </NavLink>
-        </nav>
-      </header> */}
-
-      {/* Spacer to push input to bottom */}
-      <div className="flex-1" aria-hidden="true"></div>
-
-      {/* Chat Input */}
-      <div className="p-4 bg-black/30 backdrop-blur-sm pointer-events-auto">
-        <div className="max-w-3xl mx-auto flex gap-2">
-          <input
-            ref={input}
-            type="text"
-            placeholder="Type your message..."
-            className="flex-1 bg-black/50 backdrop-blur-sm text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-            onKeyPress={handleKeyPress}
-            aria-label="Chat message"
-            disabled={loading || !!message}
-          />
+    <div className="absolute inset-x-0 bottom-0 z-10">
+      <div className="p-4">
+        <div className="relative">
+          {/* White line */}
+          <div className="absolute left-0 right-0 bottom-full mb-4 h-[2px] bg-white/10" />
           
-          <button
-            onClick={sendMessage}
-            disabled={loading || !!message}
-            className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label={loading ? "Sending message..." : "Send message"}
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Sending...
-              </span>
-            ) : (
-              "Send"
-            )}
-          </button>
+          {/* Chat input container */}
+          <div className="flex gap-2">
+            <input
+              ref={input}
+              type="text"
+              placeholder="Type your message..."
+              className="flex-1 bg-[#1a1a1a]/80 backdrop-blur-sm text-white rounded-lg px-4 py-3 
+                       border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20
+                       placeholder:text-gray-400"
+              onKeyPress={handleKeyPress}
+              aria-label="Chat message"
+              disabled={loading || !!message}
+            />
+            
+            <button
+              onClick={sendMessage}
+              disabled={loading || !!message}
+              className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-lg 
+                       transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                       text-sm font-medium"
+              aria-label={loading ? "Sending message..." : "Send message"}
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Sending...
+                </span>
+              ) : (
+                "Send"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

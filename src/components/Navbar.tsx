@@ -19,7 +19,7 @@ const navItems: NavItem[] = [
   { label: 'DESIGN', href: '/design', number: '04' },
   { label: 'DOUBLE HULL', href: '/double-hull', number: '05' },
   { label: 'OPERATION MODE', href: '/operation', number: '06' },
-  { label: 'THE BIG POWERBANK', href: '/powerbank', number: '07' },
+  { label: 'CREATE', href: '/create', number: '07' },
   { label: 'ROADMAP', href: '/roadmap', number: '08' },
 ];
 

@@ -8,6 +8,40 @@ import { ChatProvider } from '@/hooks/useChat';
 import { UI } from '@/components/UI';
 import { useAvatar, AvatarProvider } from '@/hooks/useAvatar';
 import { Button } from '@/components/ui/button';
+import { SDKConfigPanel } from '@/components/embed/SDKConfigPanel';
+import { SDKConfig, DEFAULT_SDK_CONFIG } from '@/types/sdk';
+import { Steps } from '@/components/ui/steps';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+
+const PERSONALITY_OPTIONS = [
+  { value: 'friendly', label: 'Friendly' },
+  { value: 'professional', label: 'Professional' },
+  { value: 'casual', label: 'Casual' },
+  { value: 'energetic', label: 'Energetic' },
+];
+
+const CAMERA_OPTIONS = [
+  { value: 'default', label: 'Default' },
+  { value: 'closeup', label: 'Close Up' },
+  { value: 'fullbody', label: 'Full Body' },
+  { value: 'portrait', label: 'Portrait' },
+];
+
+const LIGHTING_OPTIONS = [
+  { value: 'studio', label: 'Studio' },
+  { value: 'natural', label: 'Natural' },
+  { value: 'dramatic', label: 'Dramatic' },
+  { value: 'soft', label: 'Soft' },
+];
+
+const EXPORT_FORMAT_OPTIONS = [
+  { value: 'glb', label: 'GLB Model' },
+  { value: 'png', label: 'PNG Image' },
+  { value: 'gif', label: 'Animated GIF' },
+];
 
 export default function CreateAvatar() {
   const router = useRouter();
@@ -17,48 +51,40 @@ export default function CreateAvatar() {
   const [showAvatarCreator, setShowAvatarCreator] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('');
+  const [sdkConfig, setSDKConfig] = useState<SDKConfig>(DEFAULT_SDK_CONFIG);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [selectedFormat, setSelectedFormat] = useState('glb');
+  const [message, setMessage] = useState('');
 
   // Generate a unique ID for the model
   const generateModelId = () => {
     return `avatar_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
-  const config: AvatarCreatorConfig = {
-    clearCache: process.env.NEXT_PUBLIC_RPM_CLEAR_CACHE === 'true',
-    bodyType: (process.env.NEXT_PUBLIC_RPM_BODY_TYPE || 'fullbody') as 'fullbody' | 'halfbody',
-    quickStart: process.env.NEXT_PUBLIC_RPM_QUICK_START === 'true',
-    language: 'en',
+  const handleSDKConfigChange = (key: keyof SDKConfig, value: string) => {
+    setSDKConfig(prev => ({ ...prev, [key]: value }));
   };
 
   const handleOnAvatarExported = async (event: AvatarExportedEvent) => {
     let url = event.data?.url;
     if (url) {
-      // Add morphTargets to the URL
       url = `${url}?morphTargets=mouthSmile,ARKit`;
       setIsLoading(true);
-      console.log('🎯 Starting avatar creation process...');
-      console.log('📝 Avatar URL:', url);
       
       try {
         setLoadingStatus('Downloading avatar model...');
-        // Download the GLB file
         const response = await fetch(url);
         const blob = await response.blob();
-        console.log('✅ Avatar model downloaded, size:', blob.size);
         
         setLoadingStatus('Processing avatar...');
-        // Generate unique model ID
         const modelId = generateModelId();
-        console.log('🆔 Generated model ID:', modelId);
         
-        // Create form data
         const formData = new FormData();
         formData.append('file', blob, `${modelId}.glb`);
         formData.append('originalUrl', url);
         formData.append('modelId', modelId);
+        formData.append('sdkConfig', JSON.stringify(sdkConfig));
         
-        // Upload to our API
-        console.log('📤 Uploading avatar to API...');
         const uploadResponse = await fetch('/api/avatar', {
           method: 'POST',
           body: formData,
@@ -69,21 +95,13 @@ export default function CreateAvatar() {
         }
 
         const data = await uploadResponse.json();
-        console.log('✅ Avatar saved successfully:', data);
-        
-        // Set the avatar URL first
         setAvatarUrl(url);
-        
-        // Update loading status and states
         setLoadingStatus('Preparing preview...');
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Switch to preview mode
-        setShowAvatarCreator(false);
+        setCurrentStep(1); // Move to next step after avatar creation
         setIsLoading(false);
         setLoadingStatus('');
         
-        console.log('🎉 Avatar creation completed successfully!');
       } catch (error) {
         console.error('❌ Error processing avatar:', error);
         setLoadingStatus('Error: Failed to save avatar. Please try again.');
@@ -94,6 +112,243 @@ export default function CreateAvatar() {
       }
     }
   };
+
+  const handleExport = async (format: string) => {
+    try {
+      setIsLoading(true);
+      setLoadingStatus(`Exporting as ${format.toUpperCase()}...`);
+
+      // Add format-specific export logic here
+      switch (format) {
+        case 'glb':
+          const a = document.createElement('a');
+          a.href = avatarUrl;
+          a.download = 'avatar.glb';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          break;
+        case 'png':
+          // Add PNG export logic
+          await fetch('/api/export/png', {
+            method: 'POST',
+            body: JSON.stringify({ avatarUrl, modelId: generateModelId() }),
+          });
+          break;
+        case 'gif':
+          // Add GIF export logic
+          await fetch('/api/export/gif', {
+            method: 'POST',
+            body: JSON.stringify({ avatarUrl, modelId: generateModelId() }),
+          });
+          break;
+      }
+
+      setIsLoading(false);
+      setLoadingStatus('');
+    } catch (error) {
+      console.error('Export error:', error);
+      setLoadingStatus('Export failed. Please try again.');
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingStatus('');
+      }, 3000);
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          message, 
+          modelId: generateModelId(),
+          voiceId: sdkConfig.voiceId,
+          personality: sdkConfig.personality
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Chat request failed');
+      }
+
+      // Clear the input after successful send
+      setMessage('');
+    } catch (error) {
+      console.error('Chat error:', error);
+    }
+  };
+
+  const config: AvatarCreatorConfig = {
+    clearCache: process.env.NEXT_PUBLIC_RPM_CLEAR_CACHE === 'true',
+    bodyType: (process.env.NEXT_PUBLIC_RPM_BODY_TYPE || 'fullbody') as 'fullbody' | 'halfbody',
+    quickStart: process.env.NEXT_PUBLIC_RPM_QUICK_START === 'true',
+    language: 'en',
+  };
+
+  const steps = [
+    {
+      title: 'Create Avatar',
+      description: 'Design your avatar using the Ready Player Me creator',
+      content: (
+        <div className="w-full aspect-square max-h-[calc(100vh-300px)]">
+          <div className="relative w-full h-full">
+            <AvatarCreator
+              subdomain="aditya-6ktkl6"
+              config={config}
+              onAvatarExported={handleOnAvatarExported}
+              className="w-full h-full"
+            />
+            <ChatProvider>
+              <AvatarProvider>
+                <UI />
+              </AvatarProvider>
+            </ChatProvider>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Configure Settings',
+      description: 'Customize your avatar settings',
+      content: (
+        <div className="grid grid-cols-[1fr,1fr] gap-6 h-[calc(100vh-300px)]">
+          {/* Left side - Model Preview */}
+          <Card className="relative overflow-hidden">
+            {avatarUrl && (
+              <div className="relative w-full h-full">
+                <ChatProvider>
+                  <AvatarProvider>
+                    <Scene3D
+                      key={`preview-${avatarUrl}`}
+                      initialModelPath={avatarUrl}
+                      isCreateRoute={true}
+                    />
+                    <UI />
+                  </AvatarProvider>
+                </ChatProvider>
+              </div>
+            )}
+          </Card>
+
+          {/* Right side - Configuration */}
+          <Card className="p-6 overflow-y-auto bg-[#1a1a1a]/80">
+            <div className="space-y-4">
+              <div>
+                <Label>Voice ID</Label>
+                <Input
+                  value={sdkConfig.voiceId}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSDKConfigChange('voiceId', e.target.value)}
+                  placeholder="Enter voice ID"
+                />
+                <p className="text-sm text-gray-400 mt-1">
+                  Voice ID will be used for the avatar's speech
+                </p>
+              </div>
+              
+              <div>
+                <Label>Personality</Label>
+                <Select
+                  value={sdkConfig.personality}
+                  onValueChange={(value: string) => handleSDKConfigChange('personality', value)}
+                  options={PERSONALITY_OPTIONS}
+                />
+                <p className="text-sm text-gray-400 mt-1">
+                  Affects how the avatar responds and gestures
+                </p>
+              </div>
+
+              <div>
+                <Label>Camera Type</Label>
+                <Select
+                  value={sdkConfig.cameraType}
+                  onValueChange={(value: string) => handleSDKConfigChange('cameraType', value)}
+                  options={CAMERA_OPTIONS}
+                />
+              </div>
+
+              <div>
+                <Label>Background Image URL</Label>
+                <Input
+                  value={sdkConfig.backgroundImage}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSDKConfigChange('backgroundImage', e.target.value)}
+                  placeholder="Enter background image URL"
+                />
+              </div>
+
+              <div>
+                <Label>Lighting Type</Label>
+                <Select
+                  value={sdkConfig.lightingType}
+                  onValueChange={(value: string) => handleSDKConfigChange('lightingType', value)}
+                  options={LIGHTING_OPTIONS}
+                />
+              </div>
+            </div>
+          </Card>
+        </div>
+      ),
+    },
+    {
+      title: 'Preview',
+      description: 'Preview and finalize your avatar',
+      content: avatarUrl ? (
+        <div className="grid grid-cols-[1.5fr,1fr] gap-6 h-[calc(100vh-300px)]">
+          <Card className="relative overflow-hidden">
+            <div className="relative w-full h-full">
+              <ChatProvider>
+                <AvatarProvider>
+                  <Scene3D 
+                    key={avatarUrl} 
+                    initialModelPath={avatarUrl} 
+                    isCreateRoute={true}
+                  />
+                  <UI />
+                </AvatarProvider>
+              </ChatProvider>
+            </div>
+          </Card>
+
+          <div className="space-y-6 flex flex-col">
+            <Card className="p-6 bg-[#1a1a1a]/80">
+              <div className="space-y-4">
+                <div>
+                  <Label>Export Format</Label>
+                  <Select
+                    value={selectedFormat}
+                    onValueChange={setSelectedFormat}
+                    options={EXPORT_FORMAT_OPTIONS}
+                  />
+                </div>
+                <Button
+                  onClick={() => handleExport(selectedFormat)}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  Export
+                </Button>
+                <Button
+                  onClick={() => router.push(`/embed?modelId=${generateModelId()}`)}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white"
+                >
+                  Embed
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center h-[calc(100vh-300px)]">
+          <p className="text-gray-500">Please complete the previous steps first</p>
+        </div>
+      ),
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -108,65 +363,37 @@ export default function CreateAvatar() {
     );
   }
 
-  if (!showAvatarCreator && avatarUrl) {
-    console.log('🎨 Rendering avatar preview with URL:', avatarUrl);
-    return (
-      <div className="h-screen w-full bg-black relative">
-        <div className="absolute top-4 right-4 z-10 flex gap-4">
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Steps
+          steps={steps.map(step => ({ title: step.title, description: step.description }))}
+          currentStep={currentStep}
+          onStepClick={setCurrentStep}
+        />
+        
+        <div className="mt-8">
+          {steps[currentStep].content}
+        </div>
+
+        <div className="mt-8 flex justify-between">
           <Button
-            onClick={() => {
-              const a = document.createElement('a');
-              a.href = avatarUrl;
-              a.download = 'avatar.glb';
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-            }}
+            onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+            disabled={currentStep === 0}
+            variant="outline"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700"
+          >
+            Previous
+          </Button>
+          <Button
+            onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
+            disabled={currentStep === steps.length - 1 || (currentStep === 0 && !avatarUrl)}
             className="bg-blue-500 hover:bg-blue-600 text-white"
           >
-            Download GLB
-          </Button>
-          <Button
-            onClick={() => router.push('/embed')}
-            className="bg-green-500 hover:bg-green-600 text-white"
-          >
-            Embed
-          </Button>
-          <Button
-            onClick={() => {
-              setShowAvatarCreator(true);
-              setAvatarUrl('');
-            }}
-            className="bg-gray-500 hover:bg-gray-600 text-white"
-          >
-            Create New
+            Next
           </Button>
         </div>
-        <ChatProvider>
-          <AvatarProvider>
-            <UI />
-            <Scene3D key={avatarUrl} initialModelPath={avatarUrl} isCreateRoute={true} />
-          </AvatarProvider>
-        </ChatProvider>
       </div>
-    );
-  }
-
-  return (
-    <div className="relative w-full h-screen">
-      <style jsx global>{`
-        /* Hide the Ready Player Me header and navigation */
-        .rpm-header,
-        .rpm-navigation {
-          display: none !important;
-        }
-      `}</style>
-      <AvatarCreator
-        subdomain="aditya-6ktkl6"
-        config={config}
-        onAvatarExported={handleOnAvatarExported}
-        className="w-full h-full"
-      />
     </div>
   );
 }

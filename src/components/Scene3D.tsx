@@ -293,27 +293,8 @@ export function Scene3D({ initialModelPath, isCreateRoute = false }: { initialMo
     <div ref={containerRef} className="relative h-screen w-full bg-black">
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40 pointer-events-none z-10" />
       
-      {/* Controls */}
-      <div className="absolute top-4 right-4 z-20 space-y-2">
-        {showDownloadOptions && (
-          <>
-            <Button
-              onClick={handleDownloadGLB}
-              variant="outline"
-              className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-lg"
-            >
-              Download GLB
-            </Button>
-            <Button
-              onClick={handleResetAvatar}
-              variant="outline"
-              className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-lg"
-            >
-              Create New Avatar
-            </Button>
-          </>
-        )}
-      </div>
+      {/* Controls  create new avatar and download glb file button removed because they were looking shit in ui */}
+     
 
       {/* Preview Canvas */}
       <Canvas
