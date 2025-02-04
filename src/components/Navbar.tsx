@@ -145,6 +145,7 @@ export default function Navbar() {
           disabled={isAnimating}
           className="relative text-white hover:text-[#0066FF] transition-colors text-sm tracking-wider group disabled:opacity-50 px-4 py-2"
           aria-label={isOpen ? "Close Menu" : "Open Menu"}
+          aria-expanded={isOpen}
         >
           <span className="relative z-10 text-sm md:text-base lg:text-lg uppercase">
             {isOpen ? 'Close' : 'Menu'}
@@ -164,22 +165,27 @@ export default function Navbar() {
           '--mouse-x': '50%',
           '--mouse-y': '50%',
         } as any}
-        aria-hidden={!isOpen}
+        inert={!isOpen ? '' : undefined}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation Menu"
       >
         {/* Navigation Links */}
         <nav className="h-full flex flex-col items-start justify-center px-4 sm:px-6 md:px-16 lg:px-24">
-          <ul ref={linksRef} className="space-y-2 sm:space-y-3 md:space-y-6 w-full max-w-4xl mx-auto">
+          <ul ref={linksRef} className="space-y-2 sm:space-y-3 md:space-y-6 w-full max-w-4xl mx-auto" role="menu">
             {navItems.map((item, index) => (
               <li 
                 key={item.href} 
                 className="overflow-hidden"
                 onMouseEnter={() => setActiveIndex(index)}
                 onMouseLeave={() => setActiveIndex(-1)}
+                role="none"
               >
                 <Link
                   href={item.href}
                   onClick={handleMenuToggle}
                   className="group flex items-center space-x-2 sm:space-x-4 text-lg sm:text-xl md:text-4xl lg:text-5xl relative hover:text-[#0066FF]"
+                  role="menuitem"
                 >
                   <span className="text-[#0066FF] font-light opacity-60 group-hover:opacity-100 transition-all w-8 sm:w-12 md:w-16 shrink-0">
                     {item.number}
@@ -191,6 +197,7 @@ export default function Navbar() {
                         "absolute inset-0 bg-gradient-to-r from-[#0066FF] to-[#0044AA] opacity-0 transition-opacity blur-xl",
                         activeIndex === index ? "opacity-30" : "opacity-0"
                       )}
+                      aria-hidden="true"
                     />
                   </span>
                 </Link>
@@ -200,7 +207,7 @@ export default function Navbar() {
         </nav>
 
         {/* Decorative Lines with Glow */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
           <div className="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-[#0066FF]/50 via-[#0066FF]/20 to-transparent" />
           <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-[#0066FF]/50 via-[#0066FF]/20 to-transparent" />
           
