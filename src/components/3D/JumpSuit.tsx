@@ -52,7 +52,6 @@ const neckColors = [
 ];
 
 export function JumpSuit(props: JSX.IntrinsicElements['group']) {
-  const { nodes } = useGLTF('/models/jumpsuit_low_poly.glb') as GLTFResult;
   const [colorIndex, setColorIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [glowIntensity, setGlowIntensity] = useState(0);
@@ -60,196 +59,210 @@ export function JumpSuit(props: JSX.IntrinsicElements['group']) {
   const pulseRef = useRef(0);
   const rotateRef = useRef(0);
 
-  // Handle color change on click/tap with micro-animation
-  const handleClick = useCallback(() => {
-    setColorIndex((prev) => (prev + 1) % helmetColors.length);
-    if (groupRef.current) {
-      groupRef.current.scale.set(1.1, 1.1, 1.1);
-      setTimeout(() => {
-        if (groupRef.current) {
-          groupRef.current.scale.set(1, 1, 1);
-        }
-      }, 150);
-    }
-  }, []);
-
-  // Handle scroll events with smoother transitions
   useEffect(() => {
-    let lastScrollTime = 0;
-    const scrollThreshold = 30; // Reduced threshold for more frequent changes
-    const scrollDelay = 300; // Minimum time between color changes
+    // Log the full URL being used to load the model
+    console.log('Loading model from:', window.location.origin + '/models/jumpsuit_low_poly.glb')
+  }, [])
 
-    const handleScroll = () => {
-      const now = Date.now();
-      if (now - lastScrollTime > scrollDelay) {
-        setColorIndex((prev) => (prev + 1) % helmetColors.length);
-        lastScrollTime = now;
+  try {
+    const { nodes } = useGLTF('/models/jumpsuit_low_poly.glb') as GLTFResult;
+
+    // Handle color change on click/tap with micro-animation
+    const handleClick = useCallback(() => {
+      setColorIndex((prev) => (prev + 1) % helmetColors.length);
+      if (groupRef.current) {
+        groupRef.current.scale.set(1.1, 1.1, 1.1);
+        setTimeout(() => {
+          if (groupRef.current) {
+            groupRef.current.scale.set(1, 1, 1);
+          }
+        }, 150);
       }
-    };
+    }, []);
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    // Handle scroll events with smoother transitions
+    useEffect(() => {
+      let lastScrollTime = 0;
+      const scrollThreshold = 30; // Reduced threshold for more frequent changes
+      const scrollDelay = 300; // Minimum time between color changes
 
-  // Create custom materials with enhanced effects
-  const materials = useMemo(() => ({
-    head: new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(helmetColors[colorIndex]),
-      roughness: 0.1,
-      metalness: 0.9,
-      envMapIntensity: 2.0,
-      emissive: new THREE.Color(helmetColors[colorIndex]),
-      emissiveIntensity: 0,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.1,
-      reflectivity: 1.0,
-      transparent: true,
-      opacity: 1,
-    }),
-    suit: new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(neckColors[colorIndex]),
-      roughness: 0.2,
-      metalness: 0.8,
-      envMapIntensity: 1.5,
-      emissive: new THREE.Color(neckColors[colorIndex]),
-      emissiveIntensity: 0,
-      clearcoat: 0.5,
-      clearcoatRoughness: 0.2,
-      reflectivity: 0.8,
-      transparent: true,
-      opacity: 1,
-    }),
-    details: new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#ffd700'),
-      roughness: 0.3,
-      metalness: 1.0,
-      envMapIntensity: 2.0,
-      clearcoat: 0.5,
-      clearcoatRoughness: 0.1,
-      reflectivity: 1.0,
-    }),
-  }), [colorIndex]);
+      const handleScroll = () => {
+        const now = Date.now();
+        if (now - lastScrollTime > scrollDelay) {
+          setColorIndex((prev) => (prev + 1) % helmetColors.length);
+          lastScrollTime = now;
+        }
+      };
 
-  // Enhanced animation effects
-  useFrame((state, delta) => {
-    if (!groupRef.current) return;
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
-    // Subtle rotation
-    rotateRef.current += delta * 0.3;
-    groupRef.current.rotation.y = Math.sin(rotateRef.current) * 0.1;
+    // Create custom materials with enhanced effects
+    const materials = useMemo(() => ({
+      head: new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(helmetColors[colorIndex]),
+        roughness: 0.1,
+        metalness: 0.9,
+        envMapIntensity: 2.0,
+        emissive: new THREE.Color(helmetColors[colorIndex]),
+        emissiveIntensity: 0,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
+        reflectivity: 1.0,
+        transparent: true,
+        opacity: 1,
+      }),
+      suit: new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(neckColors[colorIndex]),
+        roughness: 0.2,
+        metalness: 0.8,
+        envMapIntensity: 1.5,
+        emissive: new THREE.Color(neckColors[colorIndex]),
+        emissiveIntensity: 0,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.2,
+        reflectivity: 0.8,
+        transparent: true,
+        opacity: 1,
+      }),
+      details: new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color('#ffd700'),
+        roughness: 0.3,
+        metalness: 1.0,
+        envMapIntensity: 2.0,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.1,
+        reflectivity: 1.0,
+      }),
+    }), [colorIndex]);
 
-    // Pulsing glow and scale effect
-    pulseRef.current += delta;
-    const pulseValue = Math.sin(pulseRef.current * 2) * 0.5 + 0.5;
-    
-    // Enhanced hover effects
-    if (isHovered) {
-      setGlowIntensity((prev) => Math.min(prev + delta * 4, 1.5));
-      groupRef.current.scale.setScalar(0.9 + pulseValue * 0.05);
-    } else {
-      setGlowIntensity((prev) => Math.max(prev - delta * 4, 0));
-      groupRef.current.scale.setScalar(0.9 + pulseValue * 0.02);
-    }
+    // Enhanced animation effects
+    useFrame((state, delta) => {
+      if (!groupRef.current) return;
 
-    // Apply enhanced glow effects
-    const baseGlow = isHovered ? glowIntensity : 0.2;
-    materials.head.emissiveIntensity = baseGlow + pulseValue * 0.4;
-    materials.suit.emissiveIntensity = (baseGlow + pulseValue * 0.4) * 0.6;
-    
-    // Dynamic environment map intensity
-    materials.head.envMapIntensity = 2.0 + pulseValue * 0.8;
-    materials.suit.envMapIntensity = 1.5 + pulseValue * 0.6;
-    materials.details.envMapIntensity = 2.0 + pulseValue * 0.8;
+      // Subtle rotation
+      rotateRef.current += delta * 0.3;
+      groupRef.current.rotation.y = Math.sin(rotateRef.current) * 0.1;
 
-    // Color pulse effect
-    const colorPulse = pulseValue * 0.2;
-    materials.head.color.offsetHSL(0, 0, colorPulse);
-    materials.suit.color.offsetHSL(0, 0, colorPulse);
-  });
+      // Pulsing glow and scale effect
+      pulseRef.current += delta;
+      const pulseValue = Math.sin(pulseRef.current * 2) * 0.5 + 0.5;
+      
+      // Enhanced hover effects
+      if (isHovered) {
+        setGlowIntensity((prev) => Math.min(prev + delta * 4, 1.5));
+        groupRef.current.scale.setScalar(0.9 + pulseValue * 0.05);
+      } else {
+        setGlowIntensity((prev) => Math.max(prev - delta * 4, 0));
+        groupRef.current.scale.setScalar(0.9 + pulseValue * 0.02);
+      }
 
-  const model = useMemo(() => (
-    <group 
-      ref={groupRef}
-      {...props} 
-      dispose={null}
-      onClick={handleClick}
-      onPointerEnter={() => setIsHovered(true)}
-      onPointerLeave={() => setIsHovered(false)}
-    >
-      <group name="Sketchfab_Scene">
-        <group
-          name="Sketchfab_model"
-          rotation={[-Math.PI / 2, 0, 0]}
-          scale={0.295}
-        >
+      // Apply enhanced glow effects
+      const baseGlow = isHovered ? glowIntensity : 0.2;
+      materials.head.emissiveIntensity = baseGlow + pulseValue * 0.4;
+      materials.suit.emissiveIntensity = (baseGlow + pulseValue * 0.4) * 0.6;
+      
+      // Dynamic environment map intensity
+      materials.head.envMapIntensity = 2.0 + pulseValue * 0.8;
+      materials.suit.envMapIntensity = 1.5 + pulseValue * 0.6;
+      materials.details.envMapIntensity = 2.0 + pulseValue * 0.8;
+
+      // Color pulse effect
+      const colorPulse = pulseValue * 0.2;
+      materials.head.color.offsetHSL(0, 0, colorPulse);
+      materials.suit.color.offsetHSL(0, 0, colorPulse);
+    });
+
+    const model = useMemo(() => (
+      <group 
+        ref={groupRef}
+        {...props} 
+        dispose={null}
+        onClick={handleClick}
+        onPointerEnter={() => setIsHovered(true)}
+        onPointerLeave={() => setIsHovered(false)}
+      >
+        <group name="Sketchfab_Scene">
           <group
-            name="Stay_Posefbx"
-            rotation={[Math.PI / 2, 0, 0]}
-            scale={0.025}
+            name="Sketchfab_model"
+            rotation={[-Math.PI / 2, 0, 0]}
+            scale={0.295}
           >
-            <group name="RootNode">
-              <group
-                name="Genesis8MaleShape"
-                scale={0.999}
-              >
-                <mesh
-                  name="Genesis8MaleShape_Material_#29_0"
-                  geometry={nodes['Genesis8MaleShape_Material_#29_0'].geometry}
-                  material={materials.head}
-                />
-              </group>
-              <group
-                name="Low_Poly_Headset"
-                position={[11.01, 161.955, 0.315]}
-                rotation={[-Math.PI / 2, 0, 0]}
-                scale={[1.137, 1.029, 1.029]}
-              >
-                <mesh
-                  name="Low_Poly_Headset_Material_#27_0"
-                  geometry={nodes['Low_Poly_Headset_Material_#27_0'].geometry}
-                  material={materials.details}
-                />
-              </group>
-              <group
-                name="Low_Poly_Jumpsuit"
-                rotation={[-Math.PI / 2, 0, 0]}
-              >
-                <mesh
-                  name="Low_Poly_Jumpsuit_Material_#25_0"
-                  geometry={nodes['Low_Poly_Jumpsuit_Material_#25_0'].geometry}
-                  material={materials.suit}
-                />
-              </group>
-              <group
-                name="DETAILS_Low_Poly"
-                rotation={[-Math.PI / 2, 0, 0]}
-              >
-                <mesh
-                  name="DETAILS_Low_Poly_Material_#26_0"
-                  geometry={nodes['DETAILS_Low_Poly_Material_#26_0'].geometry}
-                  material={materials.details}
-                />
-              </group>
-              <group
-                name="Boots_Low_Poly"
-                position={[-52.84, 0.135, 26.864]}
-                rotation={[-Math.PI / 2, 0, 0]}
-              >
-                <mesh
-                  name="Boots_Low_Poly_Material_#28_0"
-                  geometry={nodes['Boots_Low_Poly_Material_#28_0'].geometry}
-                  material={materials.suit}
-                />
+            <group
+              name="Stay_Posefbx"
+              rotation={[Math.PI / 2, 0, 0]}
+              scale={0.025}
+            >
+              <group name="RootNode">
+                <group
+                  name="Genesis8MaleShape"
+                  scale={0.999}
+                >
+                  <mesh
+                    name="Genesis8MaleShape_Material_#29_0"
+                    geometry={nodes['Genesis8MaleShape_Material_#29_0'].geometry}
+                    material={materials.head}
+                  />
+                </group>
+                <group
+                  name="Low_Poly_Headset"
+                  position={[11.01, 161.955, 0.315]}
+                  rotation={[-Math.PI / 2, 0, 0]}
+                  scale={[1.137, 1.029, 1.029]}
+                >
+                  <mesh
+                    name="Low_Poly_Headset_Material_#27_0"
+                    geometry={nodes['Low_Poly_Headset_Material_#27_0'].geometry}
+                    material={materials.details}
+                  />
+                </group>
+                <group
+                  name="Low_Poly_Jumpsuit"
+                  rotation={[-Math.PI / 2, 0, 0]}
+                >
+                  <mesh
+                    name="Low_Poly_Jumpsuit_Material_#25_0"
+                    geometry={nodes['Low_Poly_Jumpsuit_Material_#25_0'].geometry}
+                    material={materials.suit}
+                  />
+                </group>
+                <group
+                  name="DETAILS_Low_Poly"
+                  rotation={[-Math.PI / 2, 0, 0]}
+                >
+                  <mesh
+                    name="DETAILS_Low_Poly_Material_#26_0"
+                    geometry={nodes['DETAILS_Low_Poly_Material_#26_0'].geometry}
+                    material={materials.details}
+                  />
+                </group>
+                <group
+                  name="Boots_Low_Poly"
+                  position={[-52.84, 0.135, 26.864]}
+                  rotation={[-Math.PI / 2, 0, 0]}
+                >
+                  <mesh
+                    name="Boots_Low_Poly_Material_#28_0"
+                    geometry={nodes['Boots_Low_Poly_Material_#28_0'].geometry}
+                    material={materials.suit}
+                  />
+                </group>
               </group>
             </group>
           </group>
         </group>
       </group>
-    </group>
-  ), [nodes, materials, props, handleClick]);
+    ), [nodes, materials, props, handleClick]);
 
-  return model;
+    return model;
+  } catch (error) {
+    console.error('Error loading jumpsuit model:', error)
+    return null // Return null or a fallback component
+  }
 }
 
 // Preload the model
 useGLTF.preload('/models/jumpsuit_low_poly.glb');
+
+export default JumpSuit;
