@@ -35,6 +35,6 @@ yarn-error.log*
 next-env.d.ts
 
 # 3D Model Files
-*.fbx
-*.glb
-*.gltf
+# .fbx
+# *.glb
+# *.gltf
