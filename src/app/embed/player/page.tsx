@@ -1,33 +1,33 @@
 "use client";
 
 import { useSearchParams } from 'next/navigation';
-import { AvatarDisplay } from '@/components/AvatarDisplay';
 import { Suspense } from 'react';
 import { useStore } from '@/lib/store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { AvatarDisplay } from '@/components/AvatarDisplay';
 
-// Remove these exports since they don't work with "use client"
-// export const dynamic = 'force-dynamic';
-// export const revalidate = 0;
+// Add these exports back with proper configuration
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default function PlayerPage() {
   const searchParams = useSearchParams();
   const { setAvatarModel } = useStore();
+  const [hasApiKey, setHasApiKey] = useState(false);
   
-  // Move the API key check into an effect
   useEffect(() => {
-    if (!process.env.ELEVEN_LABS_API_KEY) {
-      console.error('ElevenLabs API key not found');
-    }
+    // Check for API key only on client side
+    const apiKey = process.env.ELEVEN_LABS_API_KEY;
+    setHasApiKey(!!apiKey);
   }, []);
-  
+
   const features = {
-    chat: searchParams.get('chat') === 'true',
-    lipSync: searchParams.get('lipSync') === 'true',
-    animations: searchParams.get('animations') === 'true',
+    chat: searchParams?.get('chat') === 'true',
+    lipSync: searchParams?.get('lipSync') === 'true' && hasApiKey,
+    animations: searchParams?.get('animations') === 'true',
   };
 
-  const modelPath = searchParams.get('modelPath');
+  const modelPath = searchParams?.get('modelPath');
 
   useEffect(() => {
     if (modelPath) {
@@ -41,6 +41,10 @@ export default function PlayerPage() {
         <div className="text-red-500">No avatar model specified</div>
       </div>
     );
+  }
+
+  if (!hasApiKey) {
+    console.warn('ElevenLabs API key is missing - lip sync feature will be disabled');
   }
 
   return (

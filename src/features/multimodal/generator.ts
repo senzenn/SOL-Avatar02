@@ -14,14 +14,17 @@ interface GenerationOptions {
 }
 
 class MultiModalGenerator {
-  private voiceService: VoiceService
+  private voiceService: VoiceService | null = null
   
-  constructor() {
-    const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY
-    if (!apiKey) {
-      throw new Error('ElevenLabs API key is required')
+  private getVoiceService(): VoiceService {
+    if (!this.voiceService) {
+      const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY
+      if (!apiKey) {
+        throw new Error('ElevenLabs API key is required')
+      }
+      this.voiceService = new VoiceService(apiKey)
     }
-    this.voiceService = new VoiceService(apiKey)
+    return this.voiceService
   }
 
   async generate({
@@ -41,7 +44,7 @@ class MultiModalGenerator {
       const storeVoiceSettings = useStore.getState().avatar.voiceSettings
 
       // Generate voice
-      const audioBlob = await this.voiceService.textToSpeech({
+      const audioBlob = await this.getVoiceService().textToSpeech({
         text,
         voiceId: voiceSettings?.voiceId || storeVoiceSettings.voiceId,
         voiceSettings: {

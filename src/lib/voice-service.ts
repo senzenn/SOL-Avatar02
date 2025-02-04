@@ -1,3 +1,5 @@
+import { getElevenLabsApiKey } from '@/config/elevenlabs';
+
 interface VoiceSettings {
   stability: number;
   similarityBoost: number;
@@ -16,11 +18,13 @@ export class VoiceService {
   private apiKey: string;
   private baseUrl = 'https://api.elevenlabs.io/v1';
 
-  constructor(apiKey: string) {
-    if (!apiKey) {
-      throw new Error('ElevenLabs API key is required');
+  constructor() {
+    try {
+      this.apiKey = getElevenLabsApiKey();
+    } catch (error) {
+      console.warn('ElevenLabs API key not available');
+      this.apiKey = '';
     }
-    this.apiKey = apiKey;
   }
 
   async textToSpeech({
@@ -34,6 +38,10 @@ export class VoiceService {
       speakerBoost: true,
     },
   }: VoiceGenerationOptions): Promise<Blob> {
+    if (!this.apiKey) {
+      throw new Error('ElevenLabs API key is not available');
+    }
+
     if (!voiceId) {
       throw new Error('Voice ID is required for text-to-speech');
     }
