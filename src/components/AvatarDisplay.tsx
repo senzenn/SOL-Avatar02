@@ -114,17 +114,17 @@ export function AvatarDisplay({
   }
 
   return (
-    <div ref={containerRef} className={`relative w-full h-full min-h-[400px] ${className}`}>
+    <div ref={containerRef} className={`  relative w-full h-full min-h-[400px] ${className}`}>
       {/* 3D Avatar Canvas */}
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}
-        style={{ background: 'transparent' }}
+        style={{background: "black" }}
       >
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <OrbitControls
           enablePan={false}
-          enableZoom={false}
+          enableZoom={true}
           minPolarAngle={Math.PI / 2}
           maxPolarAngle={Math.PI / 2}
         />

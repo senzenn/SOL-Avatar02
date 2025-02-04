@@ -43,6 +43,13 @@ const EXPORT_FORMAT_OPTIONS = [
   { value: 'gif', label: 'Animated GIF' },
 ];
 
+const config: AvatarCreatorConfig = {
+  bodyType: (process.env.NEXT_PUBLIC_RPM_BODY_TYPE || 'fullbody') as 'fullbody' | 'halfbody',
+  quickStart: true, // Force quick start to skip signup
+  language: 'en',
+  clearCache: true, // Clear cache to ensure fresh start
+};
+
 export default function CreateAvatar() {
   const router = useRouter();
   //@ts-ignore
@@ -185,31 +192,26 @@ export default function CreateAvatar() {
     }
   };
 
-  const config: AvatarCreatorConfig = {
-    clearCache: process.env.NEXT_PUBLIC_RPM_CLEAR_CACHE === 'true',
-    bodyType: (process.env.NEXT_PUBLIC_RPM_BODY_TYPE || 'fullbody') as 'fullbody' | 'halfbody',
-    quickStart: process.env.NEXT_PUBLIC_RPM_QUICK_START === 'true',
-    language: 'en',
-  };
-
   const steps = [
     {
       title: 'Create Avatar',
       description: 'Design your avatar using the Ready Player Me creator',
       content: (
         <div className="w-full aspect-square max-h-[calc(100vh-300px)]">
-          <div className="relative w-full h-full">
+          <div className="relative w-full h-full bg-gray-900 rounded-lg overflow-hidden [&_.rpm-header]:hidden [&_.rpm-navigation]:hidden">
+            <style jsx global>{`
+              :root {
+                --rpm-primary-color: #3B82F6 !important;
+                --rpm-background-color: #111827 !important;
+                --rpm-text-color: #FFFFFF !important;
+              }
+            `}</style>
             <AvatarCreator
               subdomain="aditya-6ktkl6"
               config={config}
               onAvatarExported={handleOnAvatarExported}
               className="w-full h-full"
             />
-            <ChatProvider>
-              <AvatarProvider>
-                <UI />
-              </AvatarProvider>
-            </ChatProvider>
           </div>
         </div>
       ),
@@ -239,56 +241,64 @@ export default function CreateAvatar() {
 
           {/* Right side - Configuration */}
           <Card className="p-6 overflow-y-auto bg-[#1a1a1a]/80">
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <Label>Voice ID</Label>
-                <Input
-                  value={sdkConfig.voiceId}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSDKConfigChange('voiceId', e.target.value)}
-                  placeholder="Enter voice ID"
-                />
-                <p className="text-sm text-gray-400 mt-1">
-                  Voice ID will be used for the avatar's speech
-                </p>
+                <h2 className="text-xl font-semibold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                  Avatar Settings
+                </h2>
               </div>
               
-              <div>
-                <Label>Personality</Label>
-                <Select
-                  value={sdkConfig.personality}
-                  onValueChange={(value: string) => handleSDKConfigChange('personality', value)}
-                  options={PERSONALITY_OPTIONS}
-                />
-                <p className="text-sm text-gray-400 mt-1">
-                  Affects how the avatar responds and gestures
-                </p>
-              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label>Voice ID</Label>
+                  <Input
+                    value={sdkConfig.voiceId}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSDKConfigChange('voiceId', e.target.value)}
+                    placeholder="Enter voice ID"
+                  />
+                  <p className="text-sm text-gray-400 mt-1">
+                    Voice ID will be used for the avatar's speech
+                  </p>
+                </div>
+                
+                <div>
+                  <Label>Personality</Label>
+                  <Select
+                    value={sdkConfig.personality}
+                    onValueChange={(value: string) => handleSDKConfigChange('personality', value)}
+                    options={PERSONALITY_OPTIONS}
+                  />
+                  <p className="text-sm text-gray-400 mt-1">
+                    Affects how the avatar responds and gestures
+                  </p>
+                </div>
 
-              <div>
-                <Label>Camera Type</Label>
-                <Select
-                  value={sdkConfig.cameraType}
-                  onValueChange={(value: string) => handleSDKConfigChange('cameraType', value)}
-                  options={CAMERA_OPTIONS}
-                />
-              </div>
+                <div>
+                  <Label>Camera Type</Label>
+                  <Select
+                    value={sdkConfig.cameraType}
+                    onValueChange={(value: string) => handleSDKConfigChange('cameraType', value)}
+                    options={CAMERA_OPTIONS}
+                  />
+                </div>
 
-              <div>
-                <Label>Background Image URL</Label>
-                <Input
-                  value={sdkConfig.backgroundImage}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSDKConfigChange('backgroundImage', e.target.value)}
-                  placeholder="Enter background image URL"
-                />
-              </div>
+                <div>
+                  <Label>Background Image URL</Label>
+                  <Input
+                    value={sdkConfig.backgroundImage}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSDKConfigChange('backgroundImage', e.target.value)}
+                    placeholder="Enter background image URL"
+                  />
+                </div>
 
-              <div>
-                <Label>Lighting Type</Label>
-                <Select
-                  value={sdkConfig.lightingType}
-                  onValueChange={(value: string) => handleSDKConfigChange('lightingType', value)}
-                  options={LIGHTING_OPTIONS}
-                />
+                <div>
+                  <Label>Lighting Type</Label>
+                  <Select
+                    value={sdkConfig.lightingType}
+                    onValueChange={(value: string) => handleSDKConfigChange('lightingType', value)}
+                    options={LIGHTING_OPTIONS}
+                  />
+                </div>
               </div>
             </div>
           </Card>

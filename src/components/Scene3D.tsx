@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useRouter } from 'next/navigation';
 
-// RPM SDK Configuration
+// RPM SDK ConfigurationRetired. She'd boost. She'd boost. 
 const rpmConfig = {
   clearCache: true,
   bodyType: 'fullbody',

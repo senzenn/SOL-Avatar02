@@ -280,5 +280,29 @@
     "modelPath": "/models/avatar_1738646490346_x7gsxvvj0.glb",
     "originalUrl": "https://models.readyplayer.me/678e63c57383f10ff60c5425.glb?morphTargets=mouthSmile,ARKit",
     "createdAt": "2025-02-04T05:21:30.954Z"
+  },
+  {
+    "id": "avatar_1738649065265_8dzu5ccby",
+    "modelPath": "/models/avatar_1738649065265_8dzu5ccby.glb",
+    "originalUrl": "https://models.readyplayer.me/67a1add89a496d29a7d6e66a.glb?morphTargets=mouthSmile,ARKit",
+    "createdAt": "2025-02-04T06:04:26.583Z"
+  },
+  {
+    "id": "avatar_1738649667096_wb8imlwh4",
+    "modelPath": "/models/avatar_1738649667096_wb8imlwh4.glb",
+    "originalUrl": "https://models.readyplayer.me/67a1b03a9a496d29a7d6f579.glb?morphTargets=mouthSmile,ARKit",
+    "createdAt": "2025-02-04T06:14:27.465Z"
+  },
+  {
+    "id": "avatar_1738652411338_79rjz04ql",
+    "modelPath": "/models/avatar_1738652411338_79rjz04ql.glb",
+    "originalUrl": "https://models.readyplayer.me/67a1baf2aaa52ce0a1c3f83b.glb?morphTargets=mouthSmile,ARKit",
+    "createdAt": "2025-02-04T07:00:11.478Z"
+  },
+  {
+    "id": "avatar_1738653650085_pv7bnfgdp",
+    "modelPath": "/models/avatar_1738653650085_pv7bnfgdp.glb",
+    "originalUrl": "https://models.readyplayer.me/67a1bfcb1fe55055d7f755c4.glb?morphTargets=mouthSmile,ARKit",
+    "createdAt": "2025-02-04T07:20:50.305Z"
   }
 ]
