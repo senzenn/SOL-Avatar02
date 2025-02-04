@@ -123,7 +123,7 @@ export function AvatarDisplay({
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <OrbitControls
-          enablePan={false}
+          enablePan={true}
           enableZoom={true}
           minPolarAngle={Math.PI / 2}
           maxPolarAngle={Math.PI / 2}

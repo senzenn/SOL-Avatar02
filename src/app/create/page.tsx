@@ -220,7 +220,7 @@ export default function CreateAvatar() {
       title: 'Configure Settings',
       description: 'Customize your avatar settings',
       content: (
-        <div className="grid grid-cols-[1fr,1fr] gap-6 h-[calc(100vh-300px)]">
+        <div className="grid grid-cols-[1fr,1fr] gap-6 h-[calc(100vh-300px)] bg-black">
           {/* Left side - Model Preview */}
           <Card className="relative overflow-hidden">
             {avatarUrl && (

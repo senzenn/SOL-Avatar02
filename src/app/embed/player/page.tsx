@@ -37,14 +37,14 @@ export default function PlayerPage() {
 
   if (!modelPath) {
     return (
-      <div className="w-full h-full min-h-screen bg-transparent flex items-center justify-center">
+      <div className="w-full h-full min-h-screen bg-black flex items-center justify-center">
         <div className="text-red-500">No avatar model specified</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full min-h-screen bg-transparent">
+    <div className="w-full h-full min-h-screen bg-black">
       <Suspense fallback={
         <div className="w-full h-full flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>

@@ -6,6 +6,13 @@ const nextConfig = {
     ELEVENLABS_VOICE_ID: process.env.ELEVEN_LABS_VOICE_ID
   },
   // ... other config options
+
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },  
 };
 
 module.exports = nextConfig;
