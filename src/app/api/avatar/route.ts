@@ -1,7 +1,6 @@
-import { writeFile, readFile } from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs/promises';
+import { put } from '@vercel/blob';
+import { kv } from '@vercel/kv';
 
 interface AvatarData {
   id: string;
@@ -25,50 +24,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No model ID provided' }, { status: 400 });
     }
 
-    const modelFileName = `${modelId}.glb`;
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Ensure directories exist
-    const modelsDir = path.join(process.cwd(), 'public', 'models');
-    const dataDir = path.join(process.cwd(), 'public', 'data');
-    await fs.mkdir(modelsDir, { recursive: true });
-    await fs.mkdir(dataDir, { recursive: true });
-
-    // Save file to public/models directory
-    const filePath = path.join(modelsDir, modelFileName);
-    await writeFile(filePath, buffer);
-
-    // Read existing avatar data or create new array
-    let avatars: AvatarData[] = [];
-    const avatarsPath = path.join(dataDir, 'avatars.json');
-    
-    try {
-      const existingData = await readFile(avatarsPath, 'utf-8');
-      avatars = JSON.parse(existingData);
-    } catch (error) {
-      // File doesn't exist yet, will create new
-      console.log('No existing avatars.json, creating new');
-    }
+    // Upload file to Vercel Blob Storage
+    const { url } = await put(`models/${modelId}.glb`, file, {
+      access: 'public',
+    });
 
     // Create new avatar data
     const avatarData: AvatarData = {
       id: modelId,
-      modelPath: `/models/${modelFileName}`,
+      modelPath: url,
       originalUrl: originalUrl,
       createdAt: new Date().toISOString(),
     };
 
-    // Remove any existing avatar with the same ID
-    avatars = avatars.filter(a => a.id !== modelId);
-    // Add new avatar data
-    avatars.push(avatarData);
-
-    // Save avatar data
-    await writeFile(
-      avatarsPath,
-      JSON.stringify(avatars, null, 2)
-    );
+    // Store avatar data in Vercel KV
+    await kv.hset('avatars', {
+      [modelId]: JSON.stringify(avatarData)
+    });
 
     return NextResponse.json({ success: true, avatar: avatarData });
   } catch (error) {
@@ -79,9 +51,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const dataPath = path.join(process.cwd(), 'public', 'data', 'avatars.json');
-    const data = await readFile(dataPath, 'utf-8');
-    const avatars = JSON.parse(data);
+    // Get all avatars from Vercel KV
+    const avatarsMap = await kv.hgetall('avatars');
+    const avatars = Object.values(avatarsMap || {}).map(str => JSON.parse(str as string));
     return NextResponse.json(avatars);
   } catch (error) {
     console.error('Error reading avatars:', error);
